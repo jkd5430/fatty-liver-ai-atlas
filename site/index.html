@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="跨超音波機台的脂肪肝 AI 實驗圖譜：LOMO、domain generalization、MedNAS、NAS-RL 與零成本指標。">
+  <meta name="theme-color" content="#0b0f0d">
+  <title>Fatty Liver AI Atlas｜跨機台實驗圖譜</title>
+  <link rel="stylesheet" href="assets/styles.css">
+  <script src="assets/app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要內容</a>
+  <header class="site-header" data-header>
+    <a class="brand" href="#top" aria-label="回到首頁頂端">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span><b>FL·AI</b><small>experiment atlas</small></span>
+    </a>
+    <nav aria-label="主要導覽">
+      <a href="#question">研究問題</a>
+      <a href="#protocol">實驗設計</a>
+      <a href="#explorer">實驗圖譜</a>
+      <a href="#rules">延伸規則</a>
+    </nav>
+    <a class="header-cta" href="#explorer">探索結果 <span aria-hidden="true">↘</span></a>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top" aria-labelledby="hero-title">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-copy">
+        <p class="kicker"><span></span> Cross-machine ultrasound research</p>
+        <h1 id="hero-title">同一個疾病，<br><em>換一台機器</em>還認得嗎？</h1>
+        <p class="hero-lede">從 1,116 張超音波影像出發，把脂肪肝分類、LOMO 驗證、領域泛化與神經架構搜尋，整理成一張可追溯、可擴充的實驗圖譜。</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#explorer">打開實驗圖譜</a>
+          <a class="button button-ghost" href="#protocol">先看驗證方式</a>
+        </div>
+      </div>
+      <div class="hero-visual" aria-label="四台超音波機器輪流作為留出測試機台的示意圖">
+        <div class="sonar">
+          <span class="sonar-sweep"></span>
+          <span class="sonar-core">LOMO<small>× 5 folds</small></span>
+          <span class="machine machine-a">Aplio 300</span>
+          <span class="machine machine-b">LOGIQ S8</span>
+          <span class="machine machine-c">SSA-660A</span>
+          <span class="machine machine-d">CGU</span>
+        </div>
+        <p class="visual-caption"><span>01</span> 每次留出一台機器，直到四台都當過真正的陌生域。</p>
+      </div>
+      <div class="hero-stats" aria-label="研究摘要">
+        <div><strong>04</strong><span>超音波機台</span></div>
+        <div><strong>20</strong><span>每設定訓練數</span></div>
+        <div><strong>03</strong><span>證據狀態</span></div>
+        <div><strong>0</strong><span>公開個資欄位</span></div>
+      </div>
+    </section>
+
+    <section class="question section" id="question" aria-labelledby="question-title">
+      <div class="section-label"><span>01</span> Research question</div>
+      <div class="question-layout">
+        <div>
+          <p class="kicker">The domain shift</p>
+          <h2 id="question-title">模型學到的是脂肪肝，<br>還是某一台機器的樣子？</h2>
+        </div>
+        <div class="question-copy">
+          <p>不同超音波機器會帶來亮度、對比、斑點紋理與解析度差異。如果把同一機台的影像隨機拆成訓練與測試，漂亮的分數可能只代表模型熟悉那台機器。</p>
+          <p>這個專案把「機台」當成需要跨越的 domain：訓練時完全看不到被留出的機台，再檢查模型能否辨識 S0 與 S1–S3。</p>
+        </div>
+      </div>
+      <div class="machine-strip" aria-label="四台機器的風格差異示意">
+        <article><div class="texture texture-1"></div><span>LOGIQ S8</span><small>domain / 01</small></article>
+        <article><div class="texture texture-2"></div><span>Aplio 300</span><small>domain / 02</small></article>
+        <article><div class="texture texture-3"></div><span>SSA-660A</span><small>domain / 03</small></article>
+        <article><div class="texture texture-4"></div><span>CGU</span><small>domain / 04</small></article>
+      </div>
+    </section>
+
+    <section class="protocol section" id="protocol" aria-labelledby="protocol-title">
+      <div class="section-label"><span>02</span> Evaluation protocol</div>
+      <div class="protocol-heading">
+        <div>
+          <p class="kicker">Leave one machine out</p>
+          <h2 id="protocol-title">四輪留出，<br>五折確認。</h2>
+        </div>
+        <p>每一輪把一台機器鎖在測試區，來源三台的病人才進入 5-fold。這讓每個設定面對 20 次不同的訓練—驗證組合。</p>
+      </div>
+      <ol class="protocol-steps">
+        <li><span class="step-no">01</span><div><b>選定留出機台</b><p>測試機台不參與訓練、驗證或門檻選擇。</p></div></li>
+        <li><span class="step-no">02</span><div><b>病人層級切分</b><p>同一病人的多張影像不會跨集合，避免資料洩漏。</p></div></li>
+        <li><span class="step-no">03</span><div><b>來源域 5-fold</b><p>來源病人輪流做 validation，其餘用於訓練。</p></div></li>
+        <li><span class="step-no">04</span><div><b>重複四台機器</b><p>最後比較跨機台 AUC、變異、失敗模式與限制。</p></div></li>
+      </ol>
+      <div class="protocol-note"><span aria-hidden="true">!</span><p><b>研究誠信提醒</b>搜尋最高值、單一 seed 與探索性相關不等於最終結論；本網站以證據狀態明確區分。</p></div>
+    </section>
+
+    <section class="signal section" aria-labelledby="signal-title">
+      <div class="section-label"><span>03</span> Signal snapshot</div>
+      <div class="signal-grid">
+        <div class="signal-copy">
+          <p class="kicker">What moved the needle</p>
+          <h2 id="signal-title">降低變異，往往比<br>堆疊複雜模組有效。</h2>
+          <p>在目前的彙整結果中，單一泛化方法約帶來 +0.02 AUC；多個方法一起用不一定更好。最醒目的小模型結果很有潛力，但仍待新 seed 確認。</p>
+          <div class="legend"><span class="dot baseline"></span>ERM 基準 <span class="dot gain"></span>觀察結果</div>
+        </div>
+        <div class="bars" aria-label="部分方法的平均留出機台 AUC 比較">
+          <div class="bar-row"><span>ERM</span><div><i style="--value:78.9%"></i></div><b>0.789</b></div>
+          <div class="bar-row"><span>DSU</span><div><i style="--value:80.8%"></i></div><b>0.808</b></div>
+          <div class="bar-row"><span>AmpMix</span><div><i style="--value:81.1%"></i></div><b>0.811</b></div>
+          <div class="bar-row"><span>GIN</span><div><i style="--value:81.3%"></i></div><b>0.813</b></div>
+          <div class="bar-row highlight"><span>小模型*</span><div><i style="--value:82.5%"></i></div><b>0.825</b></div>
+          <p>* 37 個架構中的探索最高值，單一 seed，屬待確認結果。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="explorer section" id="explorer" aria-labelledby="explorer-title">
+      <div class="section-label"><span>04</span> Experiment explorer</div>
+      <div class="explorer-head">
+        <div>
+          <p class="kicker">Evidence, not just scores</p>
+          <h2 id="explorer-title">實驗圖譜</h2>
+        </div>
+        <p>用證據狀態過濾。每張卡保留研究條件、限制與來源，不讓一個漂亮數字脫離脈絡。</p>
+      </div>
+      <div class="filter-bar" role="group" aria-label="依證據狀態篩選實驗">
+        <button class="filter is-active" type="button" data-filter="all" aria-pressed="true">全部 <span data-count="all">0</span></button>
+        <button class="filter" type="button" data-filter="confirmed" aria-pressed="false">已確認 <span data-count="confirmed">0</span></button>
+        <button class="filter" type="button" data-filter="provisional" aria-pressed="false">待確認 <span data-count="provisional">0</span></button>
+        <button class="filter" type="button" data-filter="method" aria-pressed="false">方法設計 <span data-count="method">0</span></button>
+      </div>
+      <div class="experiment-list" data-experiment-list aria-live="polite">
+        <div class="loading"><span></span>正在載入實驗資料…</div>
+      </div>
+      <p class="empty-state" data-empty hidden>這個分類目前沒有實驗。</p>
+    </section>
+
+    <section class="rules section" id="rules" aria-labelledby="rules-title">
+      <div class="section-label"><span>05</span> Repeatable by design</div>
+      <div class="rules-grid">
+        <div class="rules-copy">
+          <p class="kicker">AGENTS.md as a contract</p>
+          <h2 id="rules-title">不是只做完一頁，<br>而是留下下一頁的做法。</h2>
+          <p>專案把證據分級、JSON 格式、檔名、視覺語言、隱私禁區與驗證流程寫進 <code>AGENTS.md</code>。下一次新增研究時，AI 有清楚的判斷依據。</p>
+          <a class="text-link" href="https://github.com/jkd5430/fatty-liver-ai-atlas/blob/main/AGENTS.md" data-repo-link>到 Repository 閱讀 AGENTS.md <span aria-hidden="true">↗</span></a>
+        </div>
+        <div class="rule-terminal" aria-label="新增實驗的工作流程示意">
+          <div class="terminal-top"><span></span><span></span><span></span><b>new-experiment.workflow</b></div>
+          <ol>
+            <li><span>01</span><p><b>讀取規則</b><small>AGENTS.md + README.md</small></p></li>
+            <li><span>02</span><p><b>判斷證據</b><small>confirmed / provisional / method</small></p></li>
+            <li><span>03</span><p><b>新增資料</b><small>experiments.json schema</small></p></li>
+            <li><span>04</span><p><b>自動驗證</b><small>node scripts/validate.mjs</small></p></li>
+            <li><span>05</span><p><b>部署頁面</b><small>GitHub Pages workflow</small></p></li>
+          </ol>
+          <div class="terminal-status"><i></i> READY FOR THE NEXT EXPERIMENT</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-mark">FL·AI <span>/ 2026</span></div>
+    <p>僅供研究與課堂展示，不作為醫療診斷依據。<br>公開內容不包含原始影像、病患個資或模型權重。</p>
+    <a href="#top">回到頂端 ↑</a>
+  </footer>
+</body>
+</html>
+

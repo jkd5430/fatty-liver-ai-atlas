@@ -1,0 +1,122 @@
+{
+  "meta": {
+    "title": "跨機台脂肪肝 AI 實驗圖譜",
+    "updated": "2026-11-16",
+    "task": "超音波影像 S0 vs S1–S3 二元分類",
+    "machines": ["LOGIQ S8", "Aplio 300", "SSA-660A", "CGU"]
+  },
+  "experiments": [
+    {
+      "id": "lomo5-protocol",
+      "order": 10,
+      "title": "LOMO × 5-fold：先把機台隔離",
+      "eyebrow": "驗證設計",
+      "summary": "每次完整留出一台超音波機器做測試，其餘三台再以病人層級切成 5 folds；每個設定共進行 20 次訓練。",
+      "status": "method",
+      "tags": ["LOMO", "資料切分"],
+      "metrics": [
+        { "label": "機台", "value": "4", "note": "輪流完整留出" },
+        { "label": "來源 folds", "value": "5", "note": "病人層級" },
+        { "label": "每設定訓練", "value": "20", "note": "4 × 5" }
+      ],
+      "finding": "這個設計比隨機切圖更接近實際部署：測試機台的影像完全不參與訓練。切分以病人為單位，避免同一病人的影像跨到訓練與驗證。",
+      "source": "dg_lomo/README.md"
+    },
+    {
+      "id": "dg-confirm",
+      "order": 20,
+      "title": "單一泛化方法可帶來小幅穩定增益",
+      "eyebrow": "Domain Generalization",
+      "summary": "在 ResNet18 與 SWAD 條件下，GIN、AmpMix、SAM、USGain 與 DSU 的三個 seeds 都高於 ERM 基準；多種方法疊加反而可能過度正則化。",
+      "status": "confirmed",
+      "tags": ["DG", "SWAD", "多 seed"],
+      "metrics": [
+        { "label": "ERM AUC", "value": "0.789", "note": "3 seeds 平均" },
+        { "label": "GIN AUC", "value": "0.813", "note": "+0.025" },
+        { "label": "AmpMix AUC", "value": "0.811", "note": "+0.022" }
+      ],
+      "finding": "有效方向多半是在降低模型對機台外觀的變異，但效果約 +0.02，且多重比較校正後未達顯著。建議只選一種方法搭配 SWAD，不把多個擾動全部疊上。",
+      "source": "dg_lomo/RESULTS_STAGE2.md"
+    },
+    {
+      "id": "small-backbone",
+      "order": 30,
+      "title": "小骨幹比複雜 DG 模組更值得追",
+      "eyebrow": "架構池",
+      "summary": "37 個架構的探索中，0.31M 參數的淺型 ResNet10 變體得到最高留出機台表現，遠小於 11.2M 參數的 ResNet18。",
+      "status": "provisional",
+      "tags": ["架構", "LOMO", "待確認"],
+      "metrics": [
+        { "label": "小模型 AUC", "value": "0.825", "note": "單模型" },
+        { "label": "5-fold ensemble", "value": "0.845", "note": "探索最高值" },
+        { "label": "參數量", "value": "0.31M", "note": "約 ResNet18 的 1/36" }
+      ],
+      "finding": "結果顯示這個任務可能更需要低容量、低變異的模型，但目前是 37 個架構中挑出的單一 seed 最高值，存在 winner's curse，必須以新 seeds 重訓後才能定論。",
+      "source": "dg_lomo/RESULTS_STAGE2.md"
+    },
+    {
+      "id": "normalization-ablation",
+      "order": 40,
+      "title": "不要把診斷需要的亮度一起消掉",
+      "eyebrow": "正規化消融",
+      "summary": "BN、IN、GN、WIN 與 WGN 的比較顯示，越接近每張影像各自標準化，跨機台平均表現越差。",
+      "status": "confirmed",
+      "tags": ["正規化", "消融", "多 seed"],
+      "metrics": [
+        { "label": "BN AUC", "value": "0.789", "note": "基準" },
+        { "label": "IN AUC", "value": "0.771", "note": "−0.017" },
+        { "label": "BN ensemble", "value": "0.817", "note": "5-fold" }
+      ],
+      "finding": "亮度與對比不全是機台雜訊，也可能承載脂肪肝回音線索。IN 類方法雖改善部分機台，卻在其他機台失分；整體維持 BN 較穩健。",
+      "source": "dg_lomo/RESULTS_P8.md"
+    },
+    {
+      "id": "zero-cost-proxies",
+      "order": 50,
+      "title": "主流零成本指標在這裡可能指錯方向",
+      "eyebrow": "Zero-cost Proxy",
+      "summary": "偏好表達力與可訓練性的大網路指標，與留出機台 AUC 呈負相關；跨機台同類別活化一致性則呈正相關。",
+      "status": "provisional",
+      "tags": ["Proxy", "NAS", "相關分析"],
+      "metrics": [
+        { "label": "ZiCo Kendall τ", "value": "−0.285", "note": "反向" },
+        { "label": "SynFlow τ", "value": "−0.277", "note": "反向" },
+        { "label": "跨機台活化 τ", "value": "+0.286", "note": "探索性" }
+      ],
+      "finding": "跨機台泛化的代理指標應衡量不同機台是否學到一致表徵，而不是單純追求更大、更好訓練的網路。正向指標仍需在新的架構池做獨立驗證。",
+      "source": "dg_lomo/RESULTS_STAGE2.md"
+    },
+    {
+      "id": "nasrl-mednas-search",
+      "order": 60,
+      "title": "200 個架構：搜尋有探索，RL 未呈現學習趨勢",
+      "eyebrow": "MedNAS × NAS-RL",
+      "summary": "160 個 MedNAS 提案與 39 個 RL 抽樣涵蓋高度不同的基因型，但 RL 後半段的平均 reward 沒有優於前半段。",
+      "status": "provisional",
+      "tags": ["NAS", "RL", "MedNAS"],
+      "metrics": [
+        { "label": "MedNAS mean", "value": "0.768", "note": "n=160" },
+        { "label": "RL mean", "value": "0.772", "note": "n=39" },
+        { "label": "搜尋最高", "value": "0.832", "note": "未 confirm" }
+      ],
+      "finding": "最高 reward 是從 200 個架構中挑出來，會高估真實表現。RL 抽樣前半 0.775、後半 0.769，尚不能說控制器越學越好；需用新 seed 重訓前幾名與隨機對照。",
+      "source": "nasrl_mednas_lomo/runs/nasrl_flat/summary.txt"
+    },
+    {
+      "id": "stem-proxy-plan",
+      "order": 70,
+      "title": "讓 proxy 看見原始與擾動後的同一張影像",
+      "eyebrow": "Stem Proxy / Round 17–19",
+      "summary": "以重建或分類預訓練 stem，並比較原始、增強與配對 batch，測試 proxy 是否真的能預測未見機台的 AUC。",
+      "status": "method",
+      "tags": ["Proxy", "Stem", "實驗設計"],
+      "metrics": [
+        { "label": "留出機台", "value": "4", "note": "分別搜尋" },
+        { "label": "來源 folds", "value": "5", "note": "LOMO5" },
+        { "label": "核心比較", "value": "3×2×3", "note": "stem × 增強 × batch" }
+      ],
+      "finding": "搜尋階段只使用其餘三台機器，最後以機台內 Kendall τ 與留出 AUC 檢驗 proxy。這條線的價值不只在找最高架構，更在確認評分訊號是否能跨域成立。",
+      "source": "stem_proxy_lomo5/README.md"
+    }
+  ]
+}

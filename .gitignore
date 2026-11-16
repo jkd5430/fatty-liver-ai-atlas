@@ -1,0 +1,15 @@
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+node_modules/
+*.log
+*.pt
+*.pth
+*.h5
+*.npz
+*.npy
+*.xlsx
+*.xls
+*.csv
+
